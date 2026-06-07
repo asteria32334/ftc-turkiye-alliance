@@ -59,7 +59,7 @@ created_at,  timestamptz,  Yes,    Timestamp
 In Storage, create a public bucket named scouting_photos
 
 🔑 Default Admin Password
-Password: asteria2026
+Password: admin
 (You can change this in the code)
 
 📱 How to Use
