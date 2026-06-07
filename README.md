@@ -77,8 +77,22 @@ Use the admin password on the login screen
 View team rankings
 Browse all scouting data with photos
 
+**How to use the site as a native app on iPhone?**
+ On iOS 26.0 or later:
+-> open the website link
+-> click the 3 dots
+-> click share
+-> click more
+-> click add to the homepage
+-> make sure 'open as a web application' is enabled
+-> click add
+on iOS 18 or before:
+-> click share icon
+-> click add to the homepage
+-> make sure 'open as a web application' is enabled
+-> click add
 
-🤝 Contributing
+ Contributing
 We welcome contributions from the FTC community!
 
 Fork the project
@@ -87,10 +101,5 @@ Commit your changes (git commit -m 'Add amazing feature')
 Push to the branch (git push origin feature/amazing-feature)
 Open a Pull Request
 
-
-📄 License
+ License
 This project is licensed under the MIT License — feel free to use, modify, and distribute.
-
-🙏 Acknowledgments
-
-All FTC teams who inspired this project
