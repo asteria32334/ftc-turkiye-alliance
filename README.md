@@ -101,3 +101,7 @@ Open a Pull Request
 
  License
 This project is licensed under the MIT License — feel free to use, modify, and distribute.
+
+
+NOTE:
+IF YOU EXPERIENCE ANY PROBLEMS WİTH SETUP PROCCESS, PLEASE REACH US AT-> asteria.32334@gmail.com or @asteria_32334 Instagram
