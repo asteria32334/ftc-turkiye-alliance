@@ -6,8 +6,8 @@ import 'dart:typed_data';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
-    url: 'https://plsfmbknqsjgvpjoubht.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsc2ZtYmtucXNqZ3Zwam91Ymh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1ODc3NzcsImV4cCI6MjA5NjE2Mzc3N30.TLee9QqcSjvT00ouwF53ntu-K7kcY9R_BDK9Tv82aF4',
+    url: '    ',
+    anonKey: '  ',
   );
   runApp(const MyApp());
 }
@@ -62,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
             const Text("Admin Girişi"),
             TextField(controller: _adminPass, decoration: const InputDecoration(labelText: 'Admin Şifresi', border: OutlineInputBorder()), obscureText: true),
             ElevatedButton(onPressed: () {
-              if (_adminPass.text == "asteria2026") Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AdminPage()));
+              if (_adminPass.text == "admin") Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AdminPage()));
             }, child: const Text('Admin Paneli')),
           ]),
         ),
