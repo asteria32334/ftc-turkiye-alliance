@@ -4,8 +4,6 @@
 
 Developed by **Asteria Robotics #32334** to help teams collect fast, organized, and reliable scouting data during competitions and qualifiers.
 
-![Banner](https://via.placeholder.com/1200x400/0F172A/00D4FF?text=Asteria+Scouting+App)
-
 ---
 
 ## ✨ Key Features
