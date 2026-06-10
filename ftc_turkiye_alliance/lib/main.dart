@@ -219,7 +219,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                           child: ListTile(
                             title: Text(comment['author_name']),
                             subtitle: Text(comment['content']),
-                            trailing: comment['author_name'] == widget.post['author_name'] ? Row(
+                            trailing: comment['team_name'] == widget.post['team_name'] ? Row(  // Takım bazlı kontrol
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(icon: const Icon(Icons.edit, size: 20), onPressed: () {
@@ -269,6 +269,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                       await supabase.from('alliance_comments').insert({
                         'post_id': widget.post['id'],
                         'author_name': widget.post['author_name'],
+                        'team_name': widget.post['team_name'],   // Takım bilgisi de kaydediliyor
                         'content': _commentController.text,
                       });
                     }
