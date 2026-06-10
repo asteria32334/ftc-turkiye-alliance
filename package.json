@@ -1,7 +1,0 @@
-{
-  "name": "flutter_supabase_web",
-  "version": "1.0.0",
-  "scripts": {
-    "vercel-build": "git clone https://github.com/flutter/flutter.git -b stable && ./flutter/bin/flutter config --enable-web && ./flutter/bin/flutter build web --release"
-  }
-}
