@@ -39,6 +39,7 @@ class _LoginPageState extends State<LoginPage> {
   final _nameController = TextEditingController();
   final _teamNameController = TextEditingController();
   final _teamNumberController = TextEditingController();
+  final _adminPass = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
             TextField(controller: _teamNameController, decoration: const InputDecoration(labelText: 'Takım Adı', border: OutlineInputBorder())),
             const SizedBox(height: 16),
             TextField(controller: _teamNumberController, decoration: const InputDecoration(labelText: 'Takım Numarası', border: OutlineInputBorder()), keyboardType: TextInputType.number),
-            const SizedBox(height: 40),
+            const SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
                 if (_nameController.text.trim().isEmpty || _teamNameController.text.trim().isEmpty) {
@@ -75,6 +76,12 @@ class _LoginPageState extends State<LoginPage> {
               },
               child: const Text('Giriş Yap', style: TextStyle(fontSize: 18)),
             ),
+            const SizedBox(height: 40),
+            const Text("Admin Girişi"),
+            TextField(controller: _adminPass, decoration: const InputDecoration(labelText: 'Admin Şifresi', border: OutlineInputBorder()), obscureText: true),
+            ElevatedButton(onPressed: () {
+              if (_adminPass.text == "asteria2026") Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AdminPage()));
+            }, child: const Text('Admin Paneli')),
           ]),
         ),
       ),
@@ -124,36 +131,96 @@ class HomePage extends StatelessWidget {
 }
 
 // ====================== TÜM PAYLAŞIMLAR ======================
-class PostsPage extends StatelessWidget {
+class PostsPage extends StatefulWidget {
   const PostsPage({super.key});
+  @override State<PostsPage> createState() => _PostsPageState();
+}
+
+class _PostsPageState extends State<PostsPage> {
+  String selectedCategory = 'Tümü';
+  String sortBy = 'newest';
+
+  final List<String> categories = ['Tümü', 'Genel', 'Robot', 'Kod', 'Strateji', 'Yardım', 'Organizasyon', 'Diğer'];
 
   @override
   Widget build(BuildContext context) {
+    String orderBy = sortBy == 'likes' ? 'like' : 'created_at';
+    bool ascending = sortBy == 'oldest';
+
     return Scaffold(
       appBar: AppBar(title: const Text('Tüm Paylaşımlar')),
-      body: FutureBuilder<List<dynamic>>(
-        future: Supabase.instance.client.from('alliance_posts').select().order('created_at', ascending: false),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-          final data = snapshot.data ?? [];
-          if (data.isEmpty) return const Center(child: Text('Henüz paylaşım yok.'));
-
-          return ListView.builder(
-            itemCount: data.length,
-            itemBuilder: (context, index) {
-              final post = data[index];
-              return Card(
-                margin: const EdgeInsets.all(10),
-                child: ListTile(
-                  title: Text(post['title'] ?? 'Başlıksız'),
-                  subtitle: Text(post['content']?.toString() ?? ''),
-                  trailing: Text(post['team_name'] ?? ''),
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PostDetailPage(post: post))),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: DropdownButton<String>(
+                    value: selectedCategory,
+                    isExpanded: true,
+                    items: categories.map((cat) => DropdownMenuItem(value: cat, child: Text(cat))).toList(),
+                    onChanged: (value) => setState(() => selectedCategory = value!),
+                  ),
                 ),
-              );
-            },
-          );
-        },
+                const SizedBox(width: 8),
+                Expanded(
+                  child: DropdownButton<String>(
+                    value: sortBy,
+                    isExpanded: true,
+                    items: const [
+                      DropdownMenuItem(value: 'newest', child: Text('En Yeni')),
+                      DropdownMenuItem(value: 'oldest', child: Text('En Eski')),
+                      DropdownMenuItem(value: 'likes', child: Text('En Çok Beğenilen')),
+                    ],
+                    onChanged: (value) => setState(() => sortBy = value!),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<List<dynamic>>(
+              future: Supabase.instance.client.from('alliance_posts').select().order(orderBy, ascending: ascending),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+                final data = snapshot.data ?? [];
+                final filtered = selectedCategory == 'Tümü' ? data : data.where((p) => p['category'] == selectedCategory).toList();
+
+                return ListView.builder(
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) {
+                    final post = filtered[index];
+                    return Card(
+                      margin: const EdgeInsets.all(10),
+                      child: ListTile(
+                        title: Text(post['title'] ?? 'Başlıksız'),
+                        subtitle: Text(post['content']?.toString() ?? ''),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.favorite, color: Colors.red),
+                              onPressed: () async {
+                                await Supabase.instance.client
+                                    .from('alliance_posts')
+                                    .update({'like': (post['like'] ?? 0) + 1})
+                                    .eq('id', post['id']);
+                                setState(() {});
+                              },
+                            ),
+                            Text('${post['like'] ?? 0}'),
+                          ],
+                        ),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PostDetailPage(post: post))),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -219,7 +286,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                           child: ListTile(
                             title: Text(comment['author_name']),
                             subtitle: Text(comment['content']),
-                            trailing: comment['team_name'] == widget.post['team_name'] ? Row(  // Takım bazlı kontrol
+                            trailing: comment['author_name'] == widget.post['author_name'] ? Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(icon: const Icon(Icons.edit, size: 20), onPressed: () {
@@ -269,7 +336,6 @@ class _PostDetailPageState extends State<PostDetailPage> {
                       await supabase.from('alliance_comments').insert({
                         'post_id': widget.post['id'],
                         'author_name': widget.post['author_name'],
-                        'team_name': widget.post['team_name'],   // Takım bilgisi de kaydediliyor
                         'content': _commentController.text,
                       });
                     }
@@ -295,65 +361,94 @@ class MyPostsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Benim Paylaşımlarım')),
-      body: FutureBuilder<List<dynamic>>(
-        future: Supabase.instance.client.from('alliance_posts').select().eq('author_name', userName).order('created_at', ascending: false),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-          final data = snapshot.data ?? [];
-          if (data.isEmpty) return const Center(child: Text('Henüz paylaşımın yok.'));
-
-          return ListView.builder(
-            itemCount: data.length,
-            itemBuilder: (context, index) {
-              final post = data[index];
-              return Card(
-                margin: const EdgeInsets.all(10),
-                child: ListTile(
-                  title: Text(post['title'] ?? ''),
-                  subtitle: Text(post['content']?.toString() ?? ''),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => NewPostPage(
-                          userName: userName,
-                          teamName: post['team_name'] ?? '',
-                          teamNumber: post['team_number']?.toString() ?? '',
-                          editingPost: post,
-                        ))),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Sil?'),
-                              content: const Text('Bu paylaşımı silmek istediğinden emin misin?'),
-                              actions: [
-                                TextButton(onPressed: () => Navigator.pop(context), child: const Text('İptal')),
-                                TextButton(
-                                  onPressed: () async {
-                                    await Supabase.instance.client.from('alliance_posts').delete().eq('id', post['id']);
-                                    Navigator.pop(context);
-                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Silindi')));
-                                    (context as Element).markNeedsBuild();
-                                  },
-                                  child: const Text('Sil', style: TextStyle(color: Colors.red)),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+      body: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            color: Colors.orange.shade800,
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Colors.white, size: 22),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '⚠️ Paylaşımlarınız 90 gün sonra otomatik olarak silinecektir.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
-              );
-            },
-          );
-        },
+              ],
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<List<dynamic>>(
+              future: Supabase.instance.client.from('alliance_posts').select().eq('author_name', userName).order('created_at', ascending: false),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+                final data = snapshot.data ?? [];
+                if (data.isEmpty) return const Center(child: Text('Henüz paylaşımın yok.'));
+
+                return ListView.builder(
+                  itemCount: data.length,
+                  itemBuilder: (context, index) {
+                    final post = data[index];
+                    return Card(
+                      margin: const EdgeInsets.all(10),
+                      child: ListTile(
+                        title: Text(post['title'] ?? ''),
+                        subtitle: Text(post['content']?.toString() ?? ''),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => NewPostPage(
+                                userName: userName,
+                                teamName: post['team_name'] ?? '',
+                                teamNumber: post['team_number']?.toString() ?? '',
+                                editingPost: post,
+                              ))),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Sil?'),
+                                    content: const Text('Bu paylaşımı silmek istediğinden emin misin?'),
+                                    actions: [
+                                      TextButton(onPressed: () => Navigator.pop(context), child: const Text('İptal')),
+                                      TextButton(
+                                        onPressed: () async {
+                                          await Supabase.instance.client.from('alliance_posts').delete().eq('id', post['id']);
+                                          Navigator.pop(context);
+                                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Silindi')));
+                                          (context as Element).markNeedsBuild();
+                                        },
+                                        child: const Text('Sil', style: TextStyle(color: Colors.red)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -451,6 +546,7 @@ class _NewPostPageState extends State<NewPostPage> {
                     'author_name': widget.userName,
                     'team_name': widget.teamName,
                     'team_number': int.tryParse(widget.teamNumber),
+                    'like': 0,
                     if (photoUrls.isNotEmpty) 'photo_url': photoUrls.join(','),
                     'created_at': DateTime.now().toIso8601String(),
                   });
@@ -460,6 +556,96 @@ class _NewPostPageState extends State<NewPostPage> {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ İşlem tamamlandı!')));
               },
               child: Text(widget.editingPost != null ? 'Güncelle' : 'Paylaş', style: const TextStyle(fontSize: 18)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ====================== ADMIN PANELİ ======================
+class AdminPage extends StatelessWidget {
+  const AdminPage({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Admin Panel')),
+      body: DefaultTabController(
+        length: 2,
+        child: Column(
+          children: [
+            const TabBar(tabs: [Tab(text: 'Takım Sıralaması'), Tab(text: 'Tüm Kayıtlar')]),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  FutureBuilder(
+                    future: Supabase.instance.client.from('alliance_posts').select('team_number, like'),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                      final data = snapshot.data as List;
+                      Map<String, List<int>> teams = {};
+                      for (var item in data) {
+                        String team = item['team_number'].toString();
+                        teams.putIfAbsent(team, () => []).add(item['like'] ?? 0);
+                      }
+                      var sorted = teams.entries.toList()..sort((a, b) => (b.value.reduce((x, y) => x+y) / b.value.length).compareTo(a.value.reduce((x, y) => x+y) / a.value.length));
+
+                      return ListView.builder(
+                        itemCount: sorted.length,
+                        itemBuilder: (context, index) {
+                          var avg = sorted[index].value.reduce((x, y) => x + y) / sorted[index].value.length;
+                          return ListTile(leading: Text('${index+1}.'), title: Text('Takım ${sorted[index].key}'), trailing: Text('${avg.toStringAsFixed(1)} Beğeni'));
+                        },
+                      );
+                    },
+                  ),
+                  FutureBuilder(
+                    future: Supabase.instance.client.from('alliance_posts').select().order('created_at', ascending: false),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                      final data = snapshot.data as List;
+                      return ListView.builder(
+                        itemCount: data.length,
+                        itemBuilder: (context, index) {
+                          final item = data[index];
+                          return Card(
+                            margin: const EdgeInsets.all(8),
+                            child: ListTile(
+                              title: Text(item['title'] ?? ''),
+                              subtitle: Text('${item['author_name']} • ${item['team_name']}'),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Sil?'),
+                                      content: const Text('Bu paylaşımı silmek istediğinden emin misin?'),
+                                      actions: [
+                                        TextButton(onPressed: () => Navigator.pop(context), child: const Text('İptal')),
+                                        TextButton(
+                                          onPressed: () async {
+                                            await Supabase.instance.client.from('alliance_posts').delete().eq('id', item['id']);
+                                            Navigator.pop(context);
+                                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Silindi')));
+                                            (context as Element).markNeedsBuild();
+                                          },
+                                          child: const Text('Sil', style: TextStyle(color: Colors.red)),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ],
         ),
