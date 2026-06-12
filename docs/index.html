@@ -22,7 +22,7 @@
     This is a placeholder for base href that will be replaced by the value of
     the `--base-href` argument provided to `flutter build`.
   -->
-  <base href="/ftc-turkiye-alliance/">
+  <base href="/ftc_turkiye_alliance/">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
@@ -61,6 +61,7 @@
   OneSignal.push(function() {
     OneSignal.init({
       appId: "1b2a5c9d-3069-4e83-8296-25d62348871f",
+      serviceWorkerParam: { scope: "/ftc_turkiye_alliance/" }, // Alt klasör yolunu OneSignal'a gösteriyoruz
       safari_web_id: "web.onesignal.auto.12e0c5f3-6b76-47bb-8015-fa3026009bd5",
       notifyButton: {
         enable: true, // Sağ altta otomatik bir bildirim zili çıkarır
@@ -113,7 +114,7 @@
         token: JSON.stringify(subscription)
       }, '*');
     }
-  }
+  
 </script>
 </body>
 </html>
