@@ -1,120 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-
-  <link rel="manifest" href="manifest.json">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="FTC Alliance">
-  
-  <link rel="apple-touch-icon" href="icons/Icon-512.png">
-  
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="/ftc_turkiye_alliance/">
+  <base href="/">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="FTC Türkiye Alliance">
 
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="asteria_scouting">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <meta name="apple-mobile-web-app-title" content="FTC Alliance">
+  <link rel="apple-touch-icon" href="https://ovufjclhczjjjtnxaipl.supabase.co/storage/v1/object/public/ftc_alliance_photos/Icon-512.png">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="https://ovufjclhczjjjtnxaipl.supabase.co/storage/v1/object/public/ftc_alliance_photos/Icon-512.png"/>
 
-  <title>asteria_scouting</title>
+  <title>FTC Türkiye Alliance</title>
   <link rel="manifest" href="manifest.json">
-
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-  <script>
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-        appId: "1b2a5c9d-3069-4e83-8296-25d62348871f",
-        allowLocalhostAsSecure: true,
-        serviceWorkerPath: "OneSignalSDKWorker.js",
-      });
-    });
-  </script>
-
-  <!-- 2. Sonra Flutter'ın Kendi Script'ini Bırak (Buna dokunma, en altta kalsın) -->
-  <script src="flutter.js" defer></script>
-
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignal.public.js" async></script>
-<script>
-  window.OneSignal = window.OneSignal || [];
-  OneSignal.push(function() {
-    OneSignal.init({
-      appId: "1b2a5c9d-3069-4e83-8296-25d62348871f",
-      serviceWorkerParam: { scope: "/ftc_turkiye_alliance/" }, // Alt klasör yolunu OneSignal'a gösteriyoruz
-      safari_web_id: "web.onesignal.auto.12e0c5f3-6b76-47bb-8015-fa3026009bd5",
-      notifyButton: {
-        enable: true, // Sağ altta otomatik bir bildirim zili çıkarır
-      },
-    });
-    
-    // Kullanıcı sisteme girdiğinde OneSignal Player ID'sini alıp Flutter'a paslayacağız
-    OneSignal.User.PushSubscription.addEventListener("change", function(event) {
-      if (event.current.id) {
-        window.parent.postMessage({
-          type: 'ONESIGNAL_TOKEN',
-          token: event.current.id
-        }, '*');
-      }
-    });
-  });
-</script>
-
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
-
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
   <script src="flutter_bootstrap.js" async></script>
-
-  <script>
-  // Tarayıcıdan bildirim izni isteme ve Token alma fonksiyonu
-  
-
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      const registration = await navigator.serviceWorker.ready;
-      
-      // Push sunucusundan cihaz kimliğini (Subscription) alıyoruz
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        // Buradaki anahtar tarayıcı şifrelemesi için standarttır
-        applicationServerKey: 'BHm07ZOP10ykkN_ftFmtSoIF3knQ2mHqn1dVgvgkjCv1QYWfRM7hf5XcLhgaxGEUFwRMSuZVix6GTBeN5n7DwH8' 
-      });
-
-      // Aldığımız bu gizli anahtarı Flutter içerisinden okuyup Supabase'e kaydedeceğiz
-      window.parent.postMessage({
-        type: 'PUSH_TOKEN_RECEIVED',
-        userName: userName,
-        token: JSON.stringify(subscription)
-      }, '*');
-    }
-  
-</script>
 </body>
 </html>
