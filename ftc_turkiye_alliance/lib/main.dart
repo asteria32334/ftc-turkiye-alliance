@@ -3,29 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:typed_data';
-import 'dart:js' as js; // dart:html yerine dart:js kullanıyoruz
-import 'dart:html' as html; // window.onMessage dinlemek için bu da kalmalı
-import 'dart:convert';
-
-// ====================== LOCAL WEB PUSH SİSTEMİ ======================
-void askForNotificationPermission(String userName) {
-  // OneSignal zaten index.html üzerinden izni otomatik isteyecek.
-  // Biz sadece gelen cihaz kimliğini (Player ID) dinleyip kaydediyoruz.
-  html.window.onMessage.listen((event) async {
-    if (event.data is Map && event.data['type'] == 'ONESIGNAL_TOKEN') {
-      final token = event.data['token'];
-      try {
-        await Supabase.instance.client.from('user_push_tokens').upsert({
-          'user_name': userName,
-          'token_json': {'player_id': token}, // JSON formatında saklıyoruz
-        }, onConflict: 'user_name'); 
-        print("OneSignal ID başarıyla kaydedildi: $token");
-      } catch (e) {
-        print("Kayıt hatası: $e");
-      }
-    }
-  });
-}
+import 'dart:async';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,6 +13,7 @@ void main() async {
   );
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -52,132 +31,39 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// ====================== KESKİN HATLI ALLIANCE LOGOSU ======================
-class FtcAllianceLogo extends StatelessWidget {
-  final double size;
-  const FtcAllianceLogo({super.key, this.size = 120});
 
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Dış Altıgen/Köşeli Hat Hissi Veren Çember Detayı
-          Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.blue.shade500.withOpacity(0.3), width: 2),
-            ),
-          ),
-          // Sol Siber Plaka (Mavi)
-          Positioned(
-            left: size * 0.15,
-            child: Container(
-              width: size * 0.4,
-              height: size * 0.5,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blue.shade600, Colors.blue.shade900],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(4),
-                  bottomLeft: Radius.circular(30),
-                  topRight: Radius.circular(20),
-                ),
-              ),
-            ),
-          ),
-          // Sağ Siber Plaka (Turuncu)
-          Positioned(
-            right: size * 0.15,
-            child: Container(
-              width: size * 0.4,
-              height: size * 0.5,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.amber.shade600, Colors.amber.shade900],
-                  begin: Alignment.topRight,
-                  end: Alignment.bottomLeft,
-                ),
-                borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(4),
-                  bottomRight: Radius.circular(30),
-                  topLeft: Radius.circular(20),
-                ),
-              ),
-            ),
-          ),
-          // Orta Birleşim Milleri
-          Container(
-            width: size * 0.5,
-            height: size * 0.05,
-            color: Colors.white70,
-          ),
-          // FTC Merkez Alanı
-          Container(
-            width: size * 0.35,
-            height: size * 0.15,
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F172A),
-              border: Border.all(color: Colors.white, width: 1.5),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: const Center(
-              child: Text(
-                'FTC',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                  fontFamily: 'monospace',
-                  letterSpacing: 2,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
- 
-// ====================== GİRİŞ SAYFASI ======================
+// ====================== GİRİŞ ======================
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
   @override State<LoginPage> createState() => _LoginPageState();
 }
- 
+
+
 class _LoginPageState extends State<LoginPage> {
   final _nameController = TextEditingController();
   final _teamNameController = TextEditingController();
   final _teamNumberController = TextEditingController();
   final _adminPass = TextEditingController();
- 
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('FTC Türkiye Alliance')),
+      appBar: AppBar(
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('FTC Türkiye Alliance', style: TextStyle(fontSize: 20)),
+            Text('Beta', style: TextStyle(fontSize: 12, color: Colors.white70)),
+          ],
+        ),
+        centerTitle: false,
+      ),
       body: Center(
-        child: SingleChildScrollView(
+        child: Padding(
           padding: const EdgeInsets.all(30),
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            const FtcAllianceLogo(size: 140),
-            const SizedBox(height: 24),
-            const Text(
-              'FTC TÜRKİYE ALLIANCE', 
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: 1.5)
-            ),
-            const Text(
-              'Mühendislik ve Dayanışma Ağı', 
-              style: TextStyle(fontSize: 13, color: Colors.grey, letterSpacing: 0.5)
-            ),
+            const Text('Hoş Geldin', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
             const SizedBox(height: 40),
             TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'İsminiz', border: OutlineInputBorder())),
             const SizedBox(height: 16),
@@ -191,10 +77,6 @@ class _LoginPageState extends State<LoginPage> {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('İsim ve Takım Adı zorunlu')));
                   return;
                 }
- 
-                // Giriş yapıldığı an tarayıcıya "Bildirim izni istetiyoruz"
-                askForNotificationPermission(_nameController.text.trim());
-
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -206,10 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 );
               },
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                child: Text('Giriş Yap', style: TextStyle(fontSize: 18)),
-              ),
+              child: const Text('Giriş Yap', style: TextStyle(fontSize: 18)),
             ),
             const SizedBox(height: 40),
             const Text("Admin Girişi"),
@@ -223,65 +102,271 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
- 
+
+
 // ====================== ANA SAYFA ======================
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   final String userName;
   final String teamName;
   final String teamNumber;
   const HomePage({super.key, required this.userName, required this.teamName, required this.teamNumber});
- 
+
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+
+class _HomePageState extends State<HomePage> {
+  // Canlı Maç Verisi (Fotoğraftaki gibi)
+  Map<String, dynamic>? liveMatch;
+
+
+  @override
+  void initState() {
+    super.initState();
+    liveMatch = {
+      "matchNumber": 10,
+      "timeLeft": "10:45",
+      "redAlliance": ["33333", "44444"],
+      "blueAlliance": ["11111", "22222"],
+      "isLive": false
+    };
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Merhaba, $userName')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const FtcAllianceLogo(size: 160),
-            const SizedBox(height: 35),
-            const Text('FTC Türkiye Alliance', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900)),
-            const Text('Türk FTC Takımları Dayanışma Platformu', style: TextStyle(fontSize: 18, color: Colors.grey)),
-            const SizedBox(height: 60),
-            ElevatedButton(
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PostsPage(currentUserName: userName))),
-              child: const Text('Tüm Paylaşımlar', style: TextStyle(fontSize: 18)),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MyPostsPage(userName: userName))),
-              child: const Text('Benim Paylaşımlarım', style: TextStyle(fontSize: 18)),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => NewPostPage(userName: userName, teamName: teamName, teamNumber: teamNumber))),
-              child: const Text('Yeni Paylaşım Yap', style: TextStyle(fontSize: 18)),
-            ),
-          ],
+      appBar: AppBar(title: Text('Merhaba, ${widget.userName}')),
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            children: [
+              const SizedBox(height: 30),
+              const Icon(Icons.groups, size: 100, color: Colors.blue),
+              const Text('FTC Türkiye Alliance', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+              const Text('Türk FTC Takımları Dayanışma Platformu', style: TextStyle(fontSize: 18, color: Colors.grey)),
+
+
+              const SizedBox(height: 40),
+
+
+                //0 dönüm tarla ====================== CANLI MAÇ KARTI ======================
+              if (liveMatch != null && liveMatch!['isLive'] == true)
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.black87,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white24, width: 1.5),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'MATCH ${liveMatch!['matchNumber']}',
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              children: [
+                                const Text('KIRMIZI', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
+                                const SizedBox(height: 8),
+                                Text(
+                                  (liveMatch!['redAlliance'] as List).join(' • '),
+                                  style: const TextStyle(color: Colors.white, fontSize: 17),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 40),
+                          Expanded(
+                            child: Column(
+                              children: [
+                                const Text('MAVİ', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 16)),
+                                const SizedBox(height: 8),
+                                Text(
+                                  (liveMatch!['blueAlliance'] as List).join(' • '),
+                                  style: const TextStyle(color: Colors.white, fontSize: 17),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+
+
+                      const SizedBox(height: 20),
+                      Text(
+                        '${liveMatch!['timeLeft']} left',
+                        style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.yellow),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                // ====================== GERİ SAYIM ======================
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade900,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: CountdownTimer(targetDate: DateTime(2026, 6, 26, 9, 0)),
+                ),
+
+
+              const SizedBox(height: 50),
+
+
+              ElevatedButton(
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PostsPage())),
+                child: const Text('Tüm Paylaşımlar', style: TextStyle(fontSize: 18)),
+              ),
+              const SizedBox(height: 15),
+              ElevatedButton(
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MyPostsPage(userName: widget.userName))),
+                child: const Text('Benim Paylaşımlarım', style: TextStyle(fontSize: 18)),
+              ),
+              const SizedBox(height: 15),
+              ElevatedButton(
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => NewPostPage(userName: widget.userName, teamName: widget.teamName, teamNumber: widget.teamNumber))),
+                child: const Text('Yeni Paylaşım Yap', style: TextStyle(fontSize: 18)),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
- 
+
+
+// ====================== GERİ SAYIM WIDGET ======================
+class CountdownTimer extends StatefulWidget {
+  final DateTime targetDate;
+  const CountdownTimer({super.key, required this.targetDate});
+
+
+  @override
+  State<CountdownTimer> createState() => _CountdownTimerState();
+}
+
+
+class _CountdownTimerState extends State<CountdownTimer> {
+  late Timer _timer;
+  Duration _remaining = Duration.zero;
+
+
+  @override
+  void initState() {
+    super.initState();
+    _calculateRemaining();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _calculateRemaining());
+  }
+
+
+  void _calculateRemaining() {
+    setState(() {
+      _remaining = widget.targetDate.difference(DateTime.now());
+      if (_remaining.isNegative) _remaining = Duration.zero;
+    });
+  }
+
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    int days = _remaining.inDays;
+    int hours = _remaining.inHours % 24;
+    int minutes = _remaining.inMinutes % 60;
+    int seconds = _remaining.inSeconds % 60;
+
+
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildTimeBox(days, 'GÜN'),
+            _buildTimeBox(hours, 'SAAT'),
+            _buildTimeBox(minutes, 'DAKİKA'),
+            _buildTimeBox(seconds, 'SANİYE'),
+          ],
+        ),
+      ],
+    );
+  }
+
+
+  Widget _buildTimeBox(int value, String label) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.black26,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              value.toString().padLeft(2, '0'),
+              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+          ),
+          Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+}
+
+
 // ====================== TÜM PAYLAŞIMLAR ======================
 class PostsPage extends StatefulWidget {
-  final String currentUserName;
-  const PostsPage({super.key, required this.currentUserName});
+  const PostsPage({super.key});
   @override State<PostsPage> createState() => _PostsPageState();
 }
- 
+
+
 class _PostsPageState extends State<PostsPage> {
   String selectedCategory = 'Tümü';
   String sortBy = 'newest';
+
+
   final List<String> categories = ['Tümü', 'Genel', 'Robot', 'Kod', 'Strateji', 'Yardım', 'Organizasyon', 'Diğer'];
- 
+
+
   @override
   Widget build(BuildContext context) {
     String orderBy = sortBy == 'likes' ? 'like' : 'created_at';
     bool ascending = sortBy == 'oldest';
- 
+
+
     return Scaffold(
       appBar: AppBar(title: const Text('Tüm Paylaşımlar')),
       body: Column(
@@ -321,7 +406,8 @@ class _PostsPageState extends State<PostsPage> {
                 if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
                 final data = snapshot.data ?? [];
                 final filtered = selectedCategory == 'Tümü' ? data : data.where((p) => p['category'] == selectedCategory).toList();
- 
+
+
                 return ListView.builder(
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
@@ -347,7 +433,7 @@ class _PostsPageState extends State<PostsPage> {
                             Text('${post['like'] ?? 0}'),
                           ],
                         ),
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PostDetailPage(post: post, currentUserName: widget.currentUserName))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PostDetailPage(post: post))),
                       ),
                     );
                   },
@@ -360,25 +446,29 @@ class _PostsPageState extends State<PostsPage> {
     );
   }
 }
- 
+
+
 // ====================== PAYLAŞIM DETAY + YORUMLAR ======================
 class PostDetailPage extends StatefulWidget {
   final Map<String, dynamic> post;
-  final String currentUserName;
-  const PostDetailPage({super.key, required this.post, required this.currentUserName});
- 
+  const PostDetailPage({super.key, required this.post});
+
+
   @override
   State<PostDetailPage> createState() => _PostDetailPageState();
 }
- 
+
+
 class _PostDetailPageState extends State<PostDetailPage> {
   final _commentController = TextEditingController();
   String? editingCommentId;
- 
+
+
   @override
   Widget build(BuildContext context) {
     final photos = (widget.post['photo_url'] as String?)?.split(',').map((e) => e.trim()).toList() ?? [];
- 
+
+
     return Scaffold(
       appBar: AppBar(title: Text(widget.post['title'] ?? '')),
       body: Column(
@@ -394,7 +484,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                   const SizedBox(height: 12),
                   Text(widget.post['content']?.toString() ?? ''),
                   const Divider(height: 30),
-                  const Text('Fotoğraflar:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text('Fotoğraflar (Linkler):', style: TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   if (photos.isEmpty)
                     const Text('Fotoğraf yok')
@@ -415,16 +505,18 @@ class _PostDetailPageState extends State<PostDetailPage> {
                       if (snapshot.connectionState == ConnectionState.waiting) return const CircularProgressIndicator();
                       final comments = snapshot.data ?? [];
                       if (comments.isEmpty) return const Text('Henüz yorum yok.');
- 
+
+
                       return Column(
                         children: comments.map((comment) => Card(
                           margin: const EdgeInsets.symmetric(vertical: 4),
                           child: ListTile(
-                            title: Text(comment['author_name']),
+                           
+                            //title: Text(comment['author_name']),
                             subtitle: Text(comment['content']),
-                            trailing: comment['author_name'] == widget.currentUserName ? Row(
+                            trailing: comment['author_name'] == widget.post['author_name'] ? Row(
                               mainAxisSize: MainAxisSize.min,
-                              children: [
+                              /*children: [
                                 IconButton(icon: const Icon(Icons.edit, size: 20), onPressed: () {
                                   setState(() {
                                     editingCommentId = comment['id'];
@@ -435,7 +527,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                                   await Supabase.instance.client.from('alliance_comments').delete().eq('id', comment['id']);
                                   setState(() {});
                                 }),
-                              ],
+                              ], */
                             ) : null,
                           ),
                         )).toList(),
@@ -464,16 +556,15 @@ class _PostDetailPageState extends State<PostDetailPage> {
                   onPressed: () async {
                     if (_commentController.text.isEmpty) return;
                     final supabase = Supabase.instance.client;
- 
+
+
                     if (editingCommentId != null) {
                       await supabase.from('alliance_comments').update({'content': _commentController.text}).eq('id', editingCommentId!);
                       editingCommentId = null;
                     } else {
-                      // Yorum tablosuna post sahibinin ismini işleyerek kaydediyoruz
                       await supabase.from('alliance_comments').insert({
                         'post_id': widget.post['id'],
-                        'author_name': widget.currentUserName, 
-                        'post_author_name': widget.post['author_name'], 
+                        'author_name': widget.post['author_name'],
                         'content': _commentController.text,
                       });
                     }
@@ -489,12 +580,14 @@ class _PostDetailPageState extends State<PostDetailPage> {
     );
   }
 }
- 
+
+
 // ====================== BENİM PAYLAŞIMLARIM ======================
 class MyPostsPage extends StatelessWidget {
   final String userName;
   const MyPostsPage({super.key, required this.userName});
- 
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -513,7 +606,11 @@ class MyPostsPage extends StatelessWidget {
                 Expanded(
                   child: Text(
                     '⚠️ Paylaşımlarınız 90 gün sonra otomatik olarak silinecektir.',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -527,7 +624,8 @@ class MyPostsPage extends StatelessWidget {
                 if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
                 final data = snapshot.data ?? [];
                 if (data.isEmpty) return const Center(child: Text('Henüz paylaşımın yok.'));
- 
+
+
                 return ListView.builder(
                   itemCount: data.length,
                   itemBuilder: (context, index) {
@@ -587,7 +685,8 @@ class MyPostsPage extends StatelessWidget {
     );
   }
 }
- 
+
+
 // ====================== YENİ / DÜZENLE PAYLAŞIM ======================
 class NewPostPage extends StatefulWidget {
   final String userName;
@@ -597,14 +696,18 @@ class NewPostPage extends StatefulWidget {
   const NewPostPage({super.key, required this.userName, required this.teamName, required this.teamNumber, this.editingPost});
   @override State<NewPostPage> createState() => _NewPostPageState();
 }
- 
+
+
 class _NewPostPageState extends State<NewPostPage> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   String category = 'Genel';
   List<Uint8List> selectedImages = [];
+
+
   final ImagePicker _picker = ImagePicker();
- 
+
+
   @override
   void initState() {
     super.initState();
@@ -614,7 +717,8 @@ class _NewPostPageState extends State<NewPostPage> {
       category = widget.editingPost!['category'] ?? 'Genel';
     }
   }
- 
+
+
   Future<void> pickImages() async {
     final List<XFile> images = await _picker.pickMultiImage();
     if (images.isNotEmpty) {
@@ -624,7 +728,8 @@ class _NewPostPageState extends State<NewPostPage> {
       }
     }
   }
- 
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -652,7 +757,8 @@ class _NewPostPageState extends State<NewPostPage> {
               onPressed: () async {
                 if (_titleController.text.isEmpty) return;
                 final supabase = Supabase.instance.client;
- 
+
+
                 List<String> photoUrls = [];
                 for (var image in selectedImages) {
                   try {
@@ -660,10 +766,11 @@ class _NewPostPageState extends State<NewPostPage> {
                     await supabase.storage.from('ftc_alliance_photos').uploadBinary(fileName, image);
                     photoUrls.add(supabase.storage.from('ftc_alliance_photos').getPublicUrl(fileName));
                   } catch (e) {
-                    print("Fotoğraf yükleme hatası: $e");
+                    print("Fotoğraf hatası: $e");
                   }
                 }
- 
+
+
                 if (widget.editingPost != null) {
                   await supabase.from('alliance_posts').update({
                     'title': _titleController.text,
@@ -684,7 +791,8 @@ class _NewPostPageState extends State<NewPostPage> {
                     'created_at': DateTime.now().toIso8601String(),
                   });
                 }
- 
+
+
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ İşlem tamamlandı!')));
               },
@@ -696,7 +804,8 @@ class _NewPostPageState extends State<NewPostPage> {
     );
   }
 }
- 
+
+
 // ====================== ADMIN PANELİ ======================
 class AdminPage extends StatelessWidget {
   const AdminPage({super.key});
@@ -723,7 +832,8 @@ class AdminPage extends StatelessWidget {
                         teams.putIfAbsent(team, () => []).add(item['like'] ?? 0);
                       }
                       var sorted = teams.entries.toList()..sort((a, b) => (b.value.reduce((x, y) => x+y) / b.value.length).compareTo(a.value.reduce((x, y) => x+y) / a.value.length));
- 
+
+
                       return ListView.builder(
                         itemCount: sorted.length,
                         itemBuilder: (context, index) {
