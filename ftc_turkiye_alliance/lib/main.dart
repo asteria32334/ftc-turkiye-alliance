@@ -6,9 +6,6 @@ import 'dart:typed_data';
 import 'dart:async';
 
 import 'package:http/http.dart' as http;
-import 'dart:async';
-
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 void main() async {
@@ -65,22 +62,10 @@ class _LoginPageState extends State<LoginPage> {
         ),
         centerTitle: false,
       ),
-      appBar: AppBar(
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('FTC Türkiye Alliance', style: TextStyle(fontSize: 20)),
-            Text('Beta', style: TextStyle(fontSize: 12, color: Colors.white70)),
-          ],
-        ),
-        centerTitle: false,
-      ),
       body: Center(
-        child: Padding(
         child: Padding(
           padding: const EdgeInsets.all(30),
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            const Text('Hoş Geldin', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
             const Text('Hoş Geldin', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
             const SizedBox(height: 40),
             TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'İsminiz', border: OutlineInputBorder())),
@@ -107,7 +92,6 @@ class _LoginPageState extends State<LoginPage> {
                 );
               },
               child: const Text('Giriş Yap', style: TextStyle(fontSize: 18)),
-              child: const Text('Giriş Yap', style: TextStyle(fontSize: 18)),
             ),
             const SizedBox(height: 40),
             const Text("Admin Girişi"),
@@ -125,7 +109,6 @@ class _LoginPageState extends State<LoginPage> {
 
 // ====================== ANA SAYFA ======================
 class HomePage extends StatefulWidget {
-class HomePage extends StatefulWidget {
   final String userName;
   final String teamName;
   final String teamNumber;
@@ -141,7 +124,7 @@ class _HomePageState extends State<HomePage> {
   Timer? _refreshTimer;
 
   // ====================== MANUEL KONTROLLER ======================
-  bool hasLiveEvent = false;      // ← Canlı etkinlik var mı?
+  bool hasLiveEvent = true;      // ← Canlı etkinlik var mı?
   bool hasUpcomingEvent = false;   // ← Yaklaşan etkinlik var mı?
 
   @override
@@ -466,7 +449,6 @@ class _CountdownTimerState extends State<CountdownTimer> {
 // ====================== TÜM PAYLAŞIMLAR ======================
 class PostsPage extends StatefulWidget {
   const PostsPage({super.key});
-  const PostsPage({super.key});
   @override State<PostsPage> createState() => _PostsPageState();
 }
 
@@ -552,7 +534,6 @@ class _PostsPageState extends State<PostsPage> {
                           ],
                         ),
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PostDetailPage(post: post))),
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PostDetailPage(post: post))),
                       ),
                     );
                   },
@@ -604,7 +585,6 @@ class _PostDetailPageState extends State<PostDetailPage> {
                   Text(widget.post['content']?.toString() ?? ''),
                   const Divider(height: 30),
                   const Text('Fotoğraflar (Linkler):', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const Text('Fotoğraflar (Linkler):', style: TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   if (photos.isEmpty)
                     const Text('Fotoğraf yok')
@@ -633,13 +613,9 @@ class _PostDetailPageState extends State<PostDetailPage> {
                           child: ListTile(
                            
                             //title: Text(comment['author_name']),
-                           
-                            //title: Text(comment['author_name']),
                             subtitle: Text(comment['content']),
                             trailing: comment['author_name'] == widget.post['author_name'] ? Row(
-                            trailing: comment['author_name'] == widget.post['author_name'] ? Row(
                               mainAxisSize: MainAxisSize.min,
-                              /*children: [
                               /*children: [
                                 IconButton(icon: const Icon(Icons.edit, size: 20), onPressed: () {
                                   setState(() {
@@ -651,7 +627,6 @@ class _PostDetailPageState extends State<PostDetailPage> {
                                   await Supabase.instance.client.from('alliance_comments').delete().eq('id', comment['id']);
                                   setState(() {});
                                 }),
-                              ], */
                               ], */
                             ) : null,
                           ),
@@ -689,7 +664,6 @@ class _PostDetailPageState extends State<PostDetailPage> {
                     } else {
                       await supabase.from('alliance_comments').insert({
                         'post_id': widget.post['id'],
-                        'author_name': widget.post['author_name'],
                         'author_name': widget.post['author_name'],
                         'content': _commentController.text,
                       });
@@ -732,11 +706,6 @@ class MyPostsPage extends StatelessWidget {
                 Expanded(
                   child: Text(
                     '⚠️ Paylaşımlarınız 90 gün sonra otomatik olarak silinecektir.',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -897,7 +866,6 @@ class _NewPostPageState extends State<NewPostPage> {
                     await supabase.storage.from('ftc_alliance_photos').uploadBinary(fileName, image);
                     photoUrls.add(supabase.storage.from('ftc_alliance_photos').getPublicUrl(fileName));
                   } catch (e) {
-                    print("Fotoğraf hatası: $e");
                     print("Fotoğraf hatası: $e");
                   }
                 }
