@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:typed_data';
 import 'dart:async';
-
+import 'dart:js' as js;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -41,13 +41,38 @@ class LoginPage extends StatefulWidget {
   @override State<LoginPage> createState() => _LoginPageState();
 }
 
-
 class _LoginPageState extends State<LoginPage> {
   final _nameController = TextEditingController();
   final _teamNameController = TextEditingController();
   final _teamNumberController = TextEditingController();
   final _adminPass = TextEditingController();
 
+  void _addToHomeScreen() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Ana Ekrana Ekle"),
+        content: const Text(
+          "Bu siteyi ana ekrana eklemek için:\n"
+          "iPhone, iPad veya macOS:\n\n"
+          "1. Sağ üstteki Paylaş butonuna basın\n"
+          "2. Daha Fazlaya basın\n"
+          "3. 'Ana Ekrana Ekle' butonuna ekleyin\n"
+          "4. 'Ekle' ye basın\n\n"
+          "Android / Bilgisayar:\n"
+          "Chrome'da sağ üstteki 3 noktaya basın, ardından 'Yayınla, Kaydet ve Paylaş' a basın \n"
+          "'Sayfayı Uygulama Olarak Ekle' ye basın \n"
+          "ve 'Yükle' seçeneğine basın",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Tamam"),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,6 +127,15 @@ class _LoginPageState extends State<LoginPage> {
           ]),
         ),
       ),
+      
+      // Ana Ekrana Ekle Butonu
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _addToHomeScreen,
+        icon: const Icon(Icons.install_mobile),
+        label: const Text("Ana Ekrana Ekle"),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
     );
   }
 }
@@ -124,7 +158,7 @@ class _HomePageState extends State<HomePage> {
   Timer? _refreshTimer;
 
   // ====================== MANUEL KONTROLLER ======================
-  bool hasLiveEvent = true;      // ← Canlı etkinlik var mı?
+  bool hasLiveEvent = false;      // ← Canlı etkinlik var mı?
   bool hasUpcomingEvent = false;   // ← Yaklaşan etkinlik var mı?
 
   @override
