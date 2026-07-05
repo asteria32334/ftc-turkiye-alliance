@@ -2,7 +2,7 @@
   "name": "FTC Türkiye Alliance",
   "short_name": "FTC TR",
   "description": "FTC Türkiye Alliance",
-  "start_url": "/ftc-turkiye-alliance/",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
